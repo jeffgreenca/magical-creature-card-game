@@ -52,14 +52,12 @@ The core game mechanic works like this:
 
 What enhancements could we make to the core game mechanic?
 ChatGPT
-
 Enhancements to the core game mechanic could include:
 
-    Character Classes/Roles: Players choose or are assigned roles (e.g., Explorer, Scientist, Thief) with special abilities or modifiers to die rolls, affecting Event or Treasure outcomes.
-    Quests and Objectives: Introduce quest cards that provide specific tasks for additional rewards, adding layers of strategy and player interaction.
-    Equipment and Item Cards: Allow players to collect or purchase equipment and item cards that can modify die rolls, influence events, or interact with treasures.
-    Variable Difficulty Levels: Adjust the threshold for drawing Event cards based on player experience or desired difficulty (e.g., roll greater than 3 for a harder game).
-    Player Interaction: Incorporate mechanics that allow players to affect each other's turns, such as trading, stealing cards, or forming alliances to complete quests.
-    Dynamic Game Board: Create a board that changes based on Event outcomes, influencing player movement and strategy.
-    Story Elements: Embed a narrative thread through event and treasure cards, enhancing immersion and player investment.
-
+1. **Character Classes/Roles:** Players choose or are assigned roles (e.g., Explorer, Scientist, Thief) with special abilities or modifiers to die rolls, affecting Event or Treasure outcomes.
+2. **Quests and Objectives:** Introduce quest cards that provide specific tasks for additional rewards, adding layers of strategy and player interaction.
+3. **Equipment and Item Cards:** Allow players to collect or purchase equipment and item cards that can modify die rolls, influence events, or interact with treasures.
+4. **Variable Difficulty Levels:** Adjust the threshold for drawing Event cards based on player experience or desired difficulty (e.g., roll greater than 3 for a harder game).
+5. **Player Interaction:** Incorporate mechanics that allow players to affect each other's turns, such as trading, stealing cards, or forming alliances to complete quests.
+6. **Dynamic Game Board:** Create a board that changes based on Event outcomes, influencing player movement and strategy.
+7. **Story Elements:** Embed a narrative thread through event and treasure cards, enhancing immersion and player investment.
