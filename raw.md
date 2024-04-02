@@ -80,3 +80,38 @@ To design the game without a board, focus on creating a rich narrative and dynam
 6. **Enhanced Role-Playing Elements:** Deepen the role-playing aspect by allowing players to develop their characters' stories, abilities, and relationships as the game progresses.
 
 7. **Portable Set-Up:** Since there's no board, the game can be designed for easy setup and play anywhere, emphasizing compact, travel-friendly components.
+
+
+---
+
+# Game Components
+
+- **Resource Cards**: Players collect these to trade for advantages or meet specific Event Card requirements.
+- **Treasure Cards**: Each card has a point value and may offer special benefits, either ongoing or consumable upon use.
+- **Event Cards**: Trigger various scenarios; some require a dice roll to determine the outcome.
+- **Adventure Gems**: Serve as a secondary scoring method and currency for strategic exchanges.
+- **2D6 (Two Six-Sided Dice)**: Used for determining outcomes of Event Cards and other in-game mechanics.
+
+## Resource Cards
+
+Categories include **Feather, Shell, Leaf,** and **Starlight**, designed to be collected and traded. Players aim to gather sets of these resources to exchange for Treasure Cards, Adventure Gems, or other strategic benefits.
+
+## Treasure Cards
+
+Treasure Cards are central to scoring and offer unique advantages. The special benefits can range from allowing an additional dice roll, protecting resources from being stolen, to directly altering Event Card outcomes. The benefits encourage strategic use and timing.
+
+## Event Cards
+
+Event Cards introduce random events and challenges. Outcomes can depend on dice rolls, with a table of possibilities featured on each card. Events may award or cost players Resource Cards, Treasure Cards, and Adventure Gems, or require players to make decisions that can affect multiple aspects of the game.
+
+## Adventure Gems
+
+Adventure Gems are earned through successful completion of Event Card challenges, trading in Resource Card sets, or by fulfilling certain conditions with Treasure Cards. Gems can be used to purchase additional resources, influence Event outcomes, or contribute to a player's victory points.
+
+# Player Agency
+
+- **Resource Management and Trading**: Players must decide which Resource Cards to collect, keep, or trade, balancing immediate needs against future potential gains.
+- **Event-Related Decisions**: Choices on Event Cards can include whether to engage with a potentially risky event for a chance at greater reward or to take a safer path with lesser benefits.
+- **Use of Special Benefits from Treasure Cards**: Strategic decisions about when to use the special benefits of Treasure Cards for maximum advantage, including whether to save, use, or trade these cards based on ongoing game circumstances.
+
+This framework sets the stage for a dynamic game that blends strategy with the excitement of chance, encouraging players to adapt their tactics based on the evolving game state and interactions with other players.
