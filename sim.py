@@ -120,19 +120,24 @@ def init_game():
 
     return Game(players, deck, Stack([]), treasureDeck, Stack([]))
 
-def ui_gamecard(card, on_click_cb=None):
+def ui_gamecard(card, on_click_cb=None, visible=True):
     def click():
         if on_click_cb:
             on_click_cb(card)
     additionalStyles = "border: 1px solid green;" if card.selected else ""
     with ui.card().style(f"width: 10em; height: 15em; {additionalStyles}").on("click", click):
-        ui.badge(card.kind).classes("ml-auto")
-        ui.label(card.title)
-        if card.image:
-            ui.image(card.image)
-        if card.subcategory:
-            ui.label(card.subcategory)
-        ui.label(card.text).classes("text-xs")
+        if visible or card.selected:
+            ui.badge(card.kind).classes("ml-auto")
+            ui.label(card.title)
+            if card.image:
+                ui.image(card.image)
+            if card.subcategory:
+                ui.label(card.subcategory)
+            ui.label(card.text).classes("text-xs")
+        else:
+            ui.space()
+            ui.icon("star", size="1em").classes("mx-auto")
+            ui.space()
 
 def ui_player(game, player_idx, select_card_cb, click_hand_cb, mirror=False):
     player = game.players[player_idx]
@@ -166,15 +171,19 @@ def _ui_player_visible_cards(player, cb):
 
 backside_card = Card("Game Card", "", "", "", "")
 discard_card = Card("Discard", "", "", "", "")
+empty_card = Card("", "", "", "", "")
 
 @ui.refreshable
-def ui_common(game, discard_click_cb=None, treasure_discard_click_cb=None):
+def ui_common(game, deck_click_cb=None, discard_click_cb=None, treasure_click_cb=None, treasure_discard_click_cb=None):
     with ui.row().classes("w-full").style("border: 1px solid blue;"): #.classes("mx-auto justify-between w-1/2"):
         with ui.column().classes("w-1/4").style("border: 1px solid green;"):
             ui.label("Deck")
             with ui.row():
                 # face-down main deck
-                ui_gamecard(backside_card)
+                if len(game.deck.cards) > 0:
+                    ui_gamecard(game.deck.cards[-1], deck_click_cb, visible=False)
+                else:
+                    ui_gamecard(empty_card) # TODO - shuffle discard back into deck
 
                 # face-up discard pile
                 if len(game.discard.cards) > 0:
@@ -186,7 +195,11 @@ def ui_common(game, discard_click_cb=None, treasure_discard_click_cb=None):
         with ui.column().classes("w-1/4").style("border: 1px solid green;"):
             ui.label("Treasure")
             with ui.row():
-                ui_gamecard(backside_card)
+                if len(game.treasureDeck.cards) > 0:
+                    ui_gamecard(game.treasureDeck.cards[-1], treasure_click_cb, visible=False)
+                else:
+                    ui_gamecard(empty_card) # TODO - shuffle treasure discard back into deck
+
                 if len(game.treasureDiscard.cards) > 0:
                     ui_gamecard(game.treasureDiscard.cards[-1], treasure_discard_click_cb)
                 else:
@@ -235,8 +248,8 @@ if __name__ in ("__main__", "__mp_main__"):
                 refresh_all()
         return select_hand
 
-    def make_select_discard_cb(stack_name, allowed_kinds):
-        def select_discard(_):
+    def make_select_stack_cb(stack_name, allowed_kinds):
+        def select_stack(_):
             # game reset will mess up our reference to the stack
             # so we wrap the stack reference
             stack = getattr(game, stack_name)
@@ -253,7 +266,7 @@ if __name__ in ("__main__", "__mp_main__"):
             elif game.selected:
                 # clicking on discard with some other card selected
                 if not game.selected.kind in allowed_kinds:
-                    notify(f"You can't discard a {game.selected.kind} card there")
+                    notify(f"You can't place a {game.selected.kind} card there")
                     return
                 game.move_card(game.selected, stack)
             else:
@@ -263,13 +276,16 @@ if __name__ in ("__main__", "__mp_main__"):
 
             # finally
             refresh_all()
-        return select_discard
+        return select_stack
 
-    discard_cb = make_select_discard_cb("discard", ("resource", "quest", "event"))
-    treasure_discard_cb = make_select_discard_cb("treasureDiscard", ("treasure",))
+    deck_cb = make_select_stack_cb("deck", ("resource", "quest", "event"))
+    treasure_cb = make_select_stack_cb("treasureDeck", ("treasure",))
+    discard_cb = make_select_stack_cb("discard", ("resource", "quest", "event"))
+    treasure_discard_cb = make_select_stack_cb("treasureDiscard", ("treasure",))
+
 
     p1()
-    ui_common(game=game, discard_click_cb=discard_cb, treasure_discard_click_cb=treasure_discard_cb)
+    ui_common(game=game, deck_click_cb=deck_cb, discard_click_cb=discard_cb, treasure_click_cb=treasure_cb, treasure_discard_click_cb=treasure_discard_cb)
     p2()
 
     def reset_game():
