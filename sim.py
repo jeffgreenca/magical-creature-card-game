@@ -45,8 +45,7 @@ class Stack:
 class Player:
     name: str
     hand: Stack
-    completedQuests: Stack
-    treasure: Stack
+    table: Stack
     tokens: int
 
 @dataclass
@@ -79,7 +78,7 @@ class Game:
 
     def find_stack(self, card):
         for player in self.players:
-            for stack in (player.hand, player.completedQuests, player.treasure):
+            for stack in (player.hand, player.table):
                 if card in stack.cards:
                     return stack
         for stack in (self.deck, self.discard, self.treasureDeck, self.treasureDiscard):
@@ -115,17 +114,28 @@ def init_game():
     players = []
     for i in (1, 2):
         hand = Stack([deck.draw() for _ in range(NUM_INITIAL_CARDS)])
-        player = Player(f"Player {i}", hand, Stack([]), Stack([]), 0)
+        player = Player(f"Player {i}", hand, Stack([]), 0)
         players.append(player)
 
     return Game(players, deck, Stack([]), treasureDeck, Stack([]))
+
+CARD_DISCARD = Card("Discard", "", "", "", "")
+CARD_NONE = Card("", "", "", "", "")
 
 def ui_gamecard(card, on_click_cb=None, visible=True):
     def click():
         if on_click_cb:
             on_click_cb(card)
-    additionalStyles = "border: 1px solid green;" if card.selected else ""
+    additionalStyles = "border: 2px solid green;" if card.selected else "border: 2px solid transparent;"
     with ui.card().style(f"width: 10em; height: 15em; {additionalStyles}").on("click", click):
+        if card == CARD_NONE:
+            ui.space()
+            return
+        if card == CARD_DISCARD: 
+            ui.space()
+            ui.icon("clear", size="1em").classes("mx-auto")
+            ui.space()
+            return
         if visible or card.selected:
             ui.badge(card.kind).classes("ml-auto")
             ui.label(card.title)
@@ -136,42 +146,37 @@ def ui_gamecard(card, on_click_cb=None, visible=True):
             ui.label(card.text).classes("text-xs")
         else:
             ui.space()
-            ui.icon("star", size="1em").classes("mx-auto")
+            ui.icon("star", size="2em").classes("mx-auto")
             ui.space()
 
-def ui_player(game, player_idx, select_card_cb, click_hand_cb, mirror=False):
+UI_PLAYER_CARDS_HAND = 0
+UI_PLAYER_CARDS_TABLE = 1
+
+def ui_player(game, player_idx, select_card_cb, click_hand_cb, click_table_cb, mirror=False):
     player = game.players[player_idx]
     if mirror:
-        _ui_player_visible_cards(player, select_card_cb)
-        _ui_player_hand(player, select_card_cb, click_hand_cb)
+        _ui_player_cards(player, select_card_cb, click_hand_cb, UI_PLAYER_CARDS_HAND)
+        _ui_player_cards(player, select_card_cb, click_table_cb, UI_PLAYER_CARDS_TABLE)
     else:
-        _ui_player_hand(player, select_card_cb, click_hand_cb)
-        _ui_player_visible_cards(player, select_card_cb)
+        _ui_player_cards(player, select_card_cb, click_table_cb, UI_PLAYER_CARDS_TABLE)
+        _ui_player_cards(player, select_card_cb, click_hand_cb, UI_PLAYER_CARDS_HAND)
 
-def _ui_player_hand(player, cb, hand_cb=None):
-    with ui.row().style("border: 1px solid red;"):
+def _ui_player_cards(player, card_cb, icon_cb=None, kind=UI_PLAYER_CARDS_HAND):
+    if not kind in (UI_PLAYER_CARDS_HAND, UI_PLAYER_CARDS_TABLE):
+        raise ValueError(f"Invalid kind: {kind}")
+
+    border_color = "red" if kind == UI_PLAYER_CARDS_HAND else "blue"
+    label_kind = "Hand" if kind == UI_PLAYER_CARDS_HAND else "Face-Up"
+    icon_kind = "o_front_hand" if kind == UI_PLAYER_CARDS_HAND else "o_square"
+
+    with ui.row().style(f"border: 1px solid {border_color};"):
         with ui.column():
-            ui.label(f"{player.name}'s Hand")
+            ui.label(f"{player.name}'s {label_kind}")
             with ui.row().classes("items-center"):
-                ui.icon("front_hand", size="xl").on("click", hand_cb)
-                for card in reversed(player.hand.cards):
-                    ui_gamecard(card, cb)
-
-def _ui_player_visible_cards(player, cb):
-    with ui.row().style("border: 1px solid blue;"):
-        with ui.row():
-            with ui.column():
-                ui.label(f"{player.name}'s Completed Quests")
-                for card in player.completedQuests.cards:
-                    ui_gamecard(card, cb)
-            with ui.column().style("border-left: 1px solid blue;"):
-                ui.label(f"{player.name}'s Treasure")
-                for card in player.treasure.cards:
-                    ui_gamecard(card, cb)
-
-backside_card = Card("Game Card", "", "", "", "")
-discard_card = Card("Discard", "", "", "", "")
-empty_card = Card("", "", "", "", "")
+                ui.icon(icon_kind, size="xl").on("click", icon_cb).props("color=accent")
+                stack = player.hand if kind == UI_PLAYER_CARDS_HAND else player.table
+                for card in reversed(stack.cards):
+                    ui_gamecard(card, card_cb)
 
 @ui.refreshable
 def ui_common(game, deck_click_cb=None, discard_click_cb=None, treasure_click_cb=None, treasure_discard_click_cb=None):
@@ -183,13 +188,13 @@ def ui_common(game, deck_click_cb=None, discard_click_cb=None, treasure_click_cb
                 if len(game.deck.cards) > 0:
                     ui_gamecard(game.deck.cards[-1], deck_click_cb, visible=False)
                 else:
-                    ui_gamecard(empty_card) # TODO - shuffle discard back into deck
+                    ui_gamecard(CARD_NONE) # TODO - shuffle discard back into deck
 
                 # face-up discard pile
                 if len(game.discard.cards) > 0:
                     ui_gamecard(game.discard.cards[-1], discard_click_cb)
                 else:
-                    ui_gamecard(discard_card, discard_click_cb)
+                    ui_gamecard(CARD_DISCARD, discard_click_cb)
         with ui.column():
             ui.space()
         with ui.column().classes("w-1/4").style("border: 1px solid green;"):
@@ -198,12 +203,12 @@ def ui_common(game, deck_click_cb=None, discard_click_cb=None, treasure_click_cb
                 if len(game.treasureDeck.cards) > 0:
                     ui_gamecard(game.treasureDeck.cards[-1], treasure_click_cb, visible=False)
                 else:
-                    ui_gamecard(empty_card) # TODO - shuffle treasure discard back into deck
+                    ui_gamecard(CARD_NONE) # TODO - shuffle treasure discard back into deck
 
                 if len(game.treasureDiscard.cards) > 0:
                     ui_gamecard(game.treasureDiscard.cards[-1], treasure_discard_click_cb)
                 else:
-                    ui_gamecard(discard_card, treasure_discard_click_cb)
+                    ui_gamecard(CARD_DISCARD, treasure_discard_click_cb)
 
 def notify(msg):
     ui.notify(msg, position="center", type='warning', timeout=500, animation=False)
@@ -217,7 +222,12 @@ if __name__ in ("__main__", "__mp_main__"):
     # this additional layer of indirection seems to work
     def render_ui_player(i):
         mirror = i == 1
-        ui_player(game=game, player_idx=i, select_card_cb=select_card, click_hand_cb=make_select_hand_cb(i), mirror=mirror)
+        ui_player(game=game, 
+                  player_idx=i, 
+                  select_card_cb=select_card, 
+                  click_hand_cb=make_select_hand_cb(i), 
+                  click_table_cb=make_select_table_cb(i),
+                  mirror=mirror)
 
     @ui.refreshable
     def p1():
@@ -230,9 +240,9 @@ if __name__ in ("__main__", "__mp_main__"):
         render_ui_player(i)
 
     def refresh_all():
-        p1.refresh()
-        ui_common.refresh(game=game, discard_click_cb=discard_cb, treasure_discard_click_cb=treasure_discard_cb)
         p2.refresh()
+        ui_common.refresh(game=game, discard_click_cb=discard_cb, treasure_discard_click_cb=treasure_discard_cb)
+        p1.refresh()
 
     def select_card(card):
         if game.is_selected(card):
@@ -240,6 +250,13 @@ if __name__ in ("__main__", "__mp_main__"):
         else:
             game.select_card(card)
         refresh_all()
+
+    def make_select_table_cb(player_idx):
+        def select_table(_):
+            if game.selected:
+                game.move_card(game.selected, game.players[player_idx].table)
+                refresh_all()
+        return select_table
 
     def make_select_hand_cb(player_idx):
         def select_hand(_):
@@ -283,10 +300,15 @@ if __name__ in ("__main__", "__mp_main__"):
     discard_cb = make_select_stack_cb("discard", ("resource", "quest", "event"))
     treasure_discard_cb = make_select_stack_cb("treasureDiscard", ("treasure",))
 
+    # TODO next:
+    # - add tokens counters (could just be a slider?)
+    # - add handling for Quests / Treasure sections (or combine those in to a single "in front of player" section for simplicity?)
+    # - start writing cards!
+    # - (maybe) hide the opponent's hand from the current player
 
-    p1()
-    ui_common(game=game, deck_click_cb=deck_cb, discard_click_cb=discard_cb, treasure_click_cb=treasure_cb, treasure_discard_click_cb=treasure_discard_cb)
     p2()
+    ui_common(game=game, deck_click_cb=deck_cb, discard_click_cb=discard_cb, treasure_click_cb=treasure_cb, treasure_discard_click_cb=treasure_discard_cb)
+    p1()
 
     def reset_game():
         global game
