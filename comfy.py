@@ -182,7 +182,7 @@ def comfy_prompt(positive_prompt, seed=None):
     r.raise_for_status()
 
 def llm():
-    prompt="""Make a list of Cute Animals, Magical Objects, Fairy Friends, and Whimsical Wonders. This is for a card game for kids. Each category should have at least 20 items.
+    prompt="""Make a list of Cute Animals, Magical Objects, Fairy Friends, Whimsical Wonders, and similar categories. This is for a card game for kids. The list should have at least 30 items. Be creative and imaginative! 
     Return the list with one item per line, without any additional text. Do not state anything about the category, we don't need that in the list output. Examples:
     fawn
     unicorn
