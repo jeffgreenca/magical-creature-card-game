@@ -5,6 +5,7 @@ import time
 import logging
 import os
 from collections import OrderedDict
+import string
 
 # log time, level and message
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -210,7 +211,10 @@ def llm():
 
 def parse_words_from_llm(llm_output):
     # we need to split on \n, remove blank lines, and trim whitespace
-    return [x.strip().lower() for x in llm_output.split("\n") if x.strip()]
+    words = [x.strip().lower() for x in llm_output.split("\n") if x.strip()]
+    # now for each word, only filter printable characters
+    words = ["".join(filter(lambda x: x in string.printable, word)) for word in words]
+    return words
 
 class WordsManager:
     """Words manager maintains two text files, one for new words and one for used words. We always add new words to the end of the new words text file, and we always remove words from the beginning of the new words file and add them to the end of the used words file."""
@@ -239,6 +243,10 @@ class WordsManager:
         # without changing the order
         before = len(words)
         words = list(OrderedDict.fromkeys(words))
+        # also deduplicate against the used words
+        with open(self.used_words_file, "r") as f:
+            used_words = f.readlines()
+        words = [x for x in words if x not in used_words]
         after = len(words)
         if before != after:
             logging.info("removed %d duplicates from words", before - after)
@@ -255,6 +263,13 @@ if __name__ == "__main__":
     wm = WordsManager()
     while True:
         try:
+            # putting the queue check here so we don't
+            # have a word in memory that gets lost if we ctrl-c
+            # while we are waiting, which is mostly what we do
+            while check_queue_depth() > 5:
+                logging.info("queue depth: %d (waiting...)", check_queue_depth())
+                time.sleep(30)
+
             word = wm.pop_word()
             if word is None:
                 logging.info("No more words to process. Obtaining new words")
@@ -264,11 +279,10 @@ if __name__ == "__main__":
                 continue
 
             p = f"dreamyvibes artstyle, a ({word}:1.5), amazing, incredible, high quality, best, 8k, close focus on subject, simple background, macro photography"
-            while check_queue_depth() > 5:
-                logging.info("queue depth: %d (waiting...)", check_queue_depth())
-                time.sleep(30)
-            logging.info("sending word: %s", word)
-            comfy_prompt(p)
+            BATCH = 3
+            logging.info(f"sending word {BATCH}x: {word}")
+            for _ in range(BATCH):
+                comfy_prompt(p)
         except Exception as e:
             # check for ctrl-c
             if isinstance(e, KeyboardInterrupt):
