@@ -171,8 +171,15 @@ def _ui_player_cards(player, card_cb, icon_cb=None, kind=UI_PLAYER_CARDS_HAND):
 
     with ui.row().style(f"border: 1px solid {border_color};"):
         with ui.column():
-            ui.label(f"{player.name}'s {label_kind}")
             with ui.row().classes("items-center"):
+                with ui.card():
+                    ui.label("Tokens")
+                    ui.badge(player.tokens, color="primary").bind_text_from(player, "tokens").classes("mx-auto")
+                    ui.button(icon="add") # TODO make this work!
+                    #ui.button("", icon="add", on_click=lambda: player.tokens = min(player.tokens + 1, game.maxTokens)).classes("mx-auto")
+                    #ui.badge(player.tokens, color="primary").bind_text_from(player, "tokens")
+                    #ui.button(icon="add", on_click=lambda: player.tokens = min(player.tokens + 1, game.maxTokens))
+                    #ui.button(icon="remove", on_click=lambda: player.tokens = max(player.tokens - 1, 0))
                 ui.icon(icon_kind, size="xl").on("click", icon_cb).props("color=accent")
                 stack = player.hand if kind == UI_PLAYER_CARDS_HAND else player.table
                 for card in reversed(stack.cards):
@@ -254,6 +261,9 @@ if __name__ in ("__main__", "__mp_main__"):
     def make_select_table_cb(player_idx):
         def select_table(_):
             if game.selected:
+                if not game.selected.kind in ("treasure", "quest"):
+                    notify("You can only place Treasure or Quest cards on the table")
+                    return
                 game.move_card(game.selected, game.players[player_idx].table)
                 refresh_all()
         return select_table
