@@ -183,13 +183,7 @@ def comfy_prompt(positive_prompt, seed=None):
 
 def llm():
     prompt="""Make a list of Magical Creatures. Take inspiration from fantasy and nature. This is for a card game for kids. The list should have at least 30 items. Be creative and imaginative! 
-    Return the list with one item per line, without any additional text. Examples:
-    rainbow butterfly
-    unicorn
-    cloud dragon
-    apple tree fairy
-    friendly wolf
-    winged sloth
+    Return the list with one item per line, without any additional text.
     """
 
     OPENAI_URL = "https://api.openai.com/v1/chat/completions"
@@ -265,3 +259,4 @@ if __name__ == "__main__":
 
     words = parse_words_from_llm(llm())
     wm.add_words(words)
+    print(words)
